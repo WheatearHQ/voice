@@ -5,12 +5,33 @@ ARG DEVICE_TYPE
 WORKDIR /root/serenade
 
 ENV DEBIAN_FRONTEND="noninteractive"
-COPY patches patches
-COPY scripts/setup scripts/setup
+COPY scripts/setup/paths.sh scripts/setup/setup-ubuntu.sh scripts/setup/
 RUN ./scripts/setup/setup-ubuntu.sh $([ "${DEVICE_TYPE}" = "gpu" ] && echo "--gpu") && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
-RUN ./scripts/setup/build-dependencies.sh $([ "${BUILD_TYPE}" = "minimal" ] && echo "--minimal") $([ "${DEVICE_TYPE}" = "gpu" ] && echo "--gpu")
+
+COPY scripts/setup/build-tools.sh scripts/setup/
+RUN ./scripts/setup/build-tools.sh $([ "${DEVICE_TYPE}" = "gpu" ] && echo "--gpu")
+
+COPY scripts/setup/build-boost.sh scripts/setup/
+RUN ./scripts/setup/build-boost.sh
+
+COPY scripts/setup/build-protobuf.sh scripts/setup/
+RUN ./scripts/setup/build-protobuf.sh
+
+COPY scripts/setup/build-sentencepiece.sh scripts/setup/
+RUN ./scripts/setup/build-sentencepiece.sh
+
+COPY patches/marian patches/marian
+COPY scripts/setup/build-marian.sh scripts/setup/
+RUN ./scripts/setup/build-marian.sh $([ "${DEVICE_TYPE}" = "gpu" ] && echo "--gpu")
+
+COPY patches/kaldi patches/kaldi
+COPY scripts/setup/build-kaldi.sh scripts/setup/
+RUN ./scripts/setup/build-kaldi.sh $([ "${DEVICE_TYPE}" = "gpu" ] && echo "--gpu")
+
+COPY scripts/setup/build-cleanup.sh scripts/setup/
+RUN ./scripts/setup/build-cleanup.sh $([ "${BUILD_TYPE}" = "minimal" ] && echo "--minimal")
 
 ENV JAVA_HOME="/root/libserenade/jdk-14.0.1"
 ENV LANG=C.UTF-8
