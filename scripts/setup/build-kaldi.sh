@@ -24,9 +24,12 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-git clone https://github.com/kaldi-asr/kaldi
+mkdir kaldi
 cd kaldi
-git checkout 3ec108da76e3d9dba901fb69f046d0e46170b8e7
+git init -q
+git remote add origin https://github.com/kaldi-asr/kaldi
+git fetch --depth 1 origin 3ec108da76e3d9dba901fb69f046d0e46170b8e7
+git checkout -q FETCH_HEAD
 git apply $SERENADE_SOURCE_ROOT/patches/kaldi/stateless.patch
 cd tools
 if [[ `uname` == 'Darwin' ]] ; then

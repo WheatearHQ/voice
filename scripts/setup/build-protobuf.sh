@@ -8,7 +8,7 @@ cd $SERENADE_LIBRARY_ROOT
 
 osx_version="11.0"
 
-git clone --recursive -b v3.14.0 https://github.com/protocolbuffers/protobuf.git protobuf-src
+git clone --recursive --shallow-submodules --depth 1 -b v3.14.0 https://github.com/protocolbuffers/protobuf.git protobuf-src
 mkdir -p protobuf
 cd protobuf-src
 ./autogen.sh

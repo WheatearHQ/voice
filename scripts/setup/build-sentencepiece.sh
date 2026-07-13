@@ -8,9 +8,8 @@ cd $SERENADE_LIBRARY_ROOT
 
 osx_version="11.0"
 
-git clone https://github.com/google/sentencepiece.git sentencepiece-src
+git clone --depth 1 --branch v0.1.96 https://github.com/google/sentencepiece.git sentencepiece-src
 cd sentencepiece-src
-git checkout v0.1.96
 mkdir build
 cd build
 cmake .. \

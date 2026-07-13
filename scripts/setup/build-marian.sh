@@ -24,9 +24,12 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-git clone https://github.com/marian-nmt/marian-dev marian
+mkdir marian
 cd marian
-git checkout 737f43014a939a3ded2806b00cbaa661fbcc5f49
+git init -q
+git remote add origin https://github.com/marian-nmt/marian-dev
+git fetch --depth 1 origin 737f43014a939a3ded2806b00cbaa661fbcc5f49
+git checkout -q FETCH_HEAD
 git apply $SERENADE_SOURCE_ROOT/patches/marian/fix-warnings.patch
 git apply $SERENADE_SOURCE_ROOT/patches/marian/max-history.patch
 mkdir build
