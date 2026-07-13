@@ -8,6 +8,7 @@ cd $SERENADE_LIBRARY_ROOT
 
 osx_version="11.0"
 gpu=false
+jobs=2
 while [[ $# -gt 0 ]]; do
   case $1 in
     --gpu)
@@ -15,6 +16,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --cpu)
       gpu=false
+      ;;
+    --jobs=*)
+      jobs="${1#--jobs=}"
       ;;
     *)
       echo "Unknown argument: $1"
@@ -56,5 +60,5 @@ else
     -DUSE_DOXYGEN=off
 fi
 rm -f ../src/3rd_party/sentencepiece/version
-cmake --build . --config Release -j2
+cmake --build . --config Release -j$jobs
 cd ../..

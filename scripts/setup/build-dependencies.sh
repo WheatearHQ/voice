@@ -6,6 +6,7 @@ HERE=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 gpu=false
 minimal=false
+jobs=2
 while [[ $# -gt 0 ]]; do
   case $1 in
     --gpu)
@@ -16,6 +17,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --minimal)
       minimal=true
+      ;;
+    --jobs=*)
+      jobs="${1#--jobs=}"
       ;;
     *)
       echo "Unknown argument: $1"
@@ -29,11 +33,12 @@ gpu_flag=()
 [[ "$gpu" == "true" ]] && gpu_flag=(--gpu)
 minimal_flag=()
 [[ "$minimal" == "true" ]] && minimal_flag=(--minimal)
+jobs_flag=(--jobs=$jobs)
 
 $HERE/build-tools.sh "${gpu_flag[@]}"
-$HERE/build-boost.sh
-$HERE/build-protobuf.sh
-$HERE/build-sentencepiece.sh
-$HERE/build-marian.sh "${gpu_flag[@]}"
-$HERE/build-kaldi.sh "${gpu_flag[@]}"
+$HERE/build-boost.sh "${jobs_flag[@]}"
+$HERE/build-protobuf.sh "${jobs_flag[@]}"
+$HERE/build-sentencepiece.sh "${jobs_flag[@]}"
+$HERE/build-marian.sh "${gpu_flag[@]}" "${jobs_flag[@]}"
+$HERE/build-kaldi.sh "${gpu_flag[@]}" "${jobs_flag[@]}"
 $HERE/build-cleanup.sh "${minimal_flag[@]}"

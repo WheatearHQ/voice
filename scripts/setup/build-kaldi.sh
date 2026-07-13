@@ -8,6 +8,7 @@ cd $SERENADE_LIBRARY_ROOT
 
 osx_version="11.0"
 gpu=false
+jobs=2
 while [[ $# -gt 0 ]]; do
   case $1 in
     --gpu)
@@ -15,6 +16,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --cpu)
       gpu=false
+      ;;
+    --jobs=*)
+      jobs="${1#--jobs=}"
       ;;
     *)
       echo "Unknown argument: $1"
@@ -35,7 +39,7 @@ cd tools
 if [[ `uname` == 'Darwin' ]] ; then
   perl -i -pe"s/-g -O2/-g -O2 -mmacosx-version-min=$osx_version/g" Makefile
 fi
-make -j2
+make -j$jobs
 cd ../src
 if [[ `uname` == 'Darwin' ]] ; then
   ./configure --shared --use-cuda=no
@@ -46,7 +50,7 @@ else
 fi
 perl -i -pe's/-g //g' kaldi.mk
 make -j clean depend
-make -j2
+make -j$jobs
 cd ../tools
 ./extras/install_phonetisaurus.sh
 cd ../..

@@ -2,6 +2,7 @@ FROM ubuntu:20.04
 
 ARG BUILD_TYPE
 ARG DEVICE_TYPE
+ARG BUILD_JOBS=2
 WORKDIR /root/serenade
 
 ENV DEBIAN_FRONTEND="noninteractive"
@@ -14,21 +15,21 @@ COPY scripts/setup/build-tools.sh scripts/setup/
 RUN ./scripts/setup/build-tools.sh $([ "${DEVICE_TYPE}" = "gpu" ] && echo "--gpu")
 
 COPY scripts/setup/build-boost.sh scripts/setup/
-RUN ./scripts/setup/build-boost.sh
+RUN ./scripts/setup/build-boost.sh --jobs=${BUILD_JOBS}
 
 COPY scripts/setup/build-protobuf.sh scripts/setup/
-RUN ./scripts/setup/build-protobuf.sh
+RUN ./scripts/setup/build-protobuf.sh --jobs=${BUILD_JOBS}
 
 COPY scripts/setup/build-sentencepiece.sh scripts/setup/
-RUN ./scripts/setup/build-sentencepiece.sh
+RUN ./scripts/setup/build-sentencepiece.sh --jobs=${BUILD_JOBS}
 
 COPY patches/marian patches/marian
 COPY scripts/setup/build-marian.sh scripts/setup/
-RUN ./scripts/setup/build-marian.sh $([ "${DEVICE_TYPE}" = "gpu" ] && echo "--gpu")
+RUN ./scripts/setup/build-marian.sh --jobs=${BUILD_JOBS} $([ "${DEVICE_TYPE}" = "gpu" ] && echo "--gpu")
 
 COPY patches/kaldi patches/kaldi
 COPY scripts/setup/build-kaldi.sh scripts/setup/
-RUN ./scripts/setup/build-kaldi.sh $([ "${DEVICE_TYPE}" = "gpu" ] && echo "--gpu")
+RUN ./scripts/setup/build-kaldi.sh --jobs=${BUILD_JOBS} $([ "${DEVICE_TYPE}" = "gpu" ] && echo "--gpu")
 
 COPY scripts/setup/build-cleanup.sh scripts/setup/
 RUN ./scripts/setup/build-cleanup.sh $([ "${BUILD_TYPE}" = "minimal" ] && echo "--minimal")
