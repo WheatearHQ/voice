@@ -1,0 +1,48 @@
+name: Docker build (engine)
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "config/Dockerfile"
+      - "scripts/setup/**"
+      - "patches/**"
+  pull_request:
+    paths:
+      - "config/Dockerfile"
+      - "scripts/setup/**"
+      - "patches/**"
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Larger hosted runners require a GitHub org on the Team plan or above
+    # and aren't available on personal accounts. This targets a self-hosted
+    # runner instead, which works on any account and keeps Docker's local
+    # build cache warm across runs (no registry cache plumbing needed).
+    # Register one at: Settings > Actions > Runners > New self-hosted runner.
+    runs-on: [self-hosted, linux, x64]
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build engine image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: config/Dockerfile
+          platforms: linux/amd64
+          build-args: |
+            BUILD_TYPE=minimal
+            BUILD_JOBS=4
+          push: false
+          tags: voice-engine:latest
+          # Self-hosted runners keep BuildKit's local cache on disk between
+          # runs automatically, so no --cache-from/--cache-to registry
+          # config is needed here (unlike ephemeral GitHub-hosted runners).
+          load: true
