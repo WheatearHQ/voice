@@ -35,8 +35,8 @@ if [[ "$gpu" == "true" ]] ; then
   sudo-non-docker ubuntu-drivers autoinstall
 fi
 
-curl -sL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB | sudo-non-docker apt-key add -
-echo "deb https://apt.repos.intel.com/mkl all main" | sudo-non-docker tee /etc/apt/sources.list.d/intel-mkl.list
+curl -sL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | sudo-non-docker apt-key add -
+echo "deb https://apt.repos.intel.com/oneapi all main" | sudo-non-docker tee /etc/apt/sources.list.d/oneapi.list
 sudo-non-docker apt-get update
 sudo-non-docker apt-get install --upgrade -y \
   autoconf \
@@ -53,7 +53,7 @@ sudo-non-docker apt-get install --upgrade -y \
   gfortran \
   git \
   groff \
-  intel-mkl-64bit-2020.2-108 \
+  intel-oneapi-mkl-devel \
   libasound2 \
   libc++-dev \
   libssl-dev \

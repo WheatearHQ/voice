@@ -38,7 +38,7 @@ if [[ `uname` == 'Darwin' ]] ; then
   ./configure --shared --use-cuda=no
   perl -i -pe"s/-O1/-O3 -DNDEBUG -mmacosx-version-min=$osx_version/g" kaldi.mk
 else
-  ./configure --shared --mathlib=MKL --use-cuda=no
+  ./configure --shared --mathlib=MKL --mkl-root=/opt/intel/oneapi/mkl/latest --use-cuda=no
   perl -i -pe's/-O1/-O3 -DNDEBUG/g' kaldi.mk
 fi
 perl -i -pe's/-g //g' kaldi.mk
