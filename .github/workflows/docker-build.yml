@@ -20,10 +20,7 @@ env:
 
 jobs:
   build:
-    # Hosted larger runner provisioned in org settings, named "docker-build".
-    # Needed for disk space: this build's final image is ~30GB, well past
-    # the 14GB standard-runner limit.
-    runs-on: docker-build
+    runs-on: ubuntu-latest-m
     permissions:
       contents: read
       packages: write
@@ -52,10 +49,5 @@ jobs:
             BUILD_JOBS=4
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          # Hosted runners are ephemeral (fresh VM each run), so BuildKit's
-          # local disk cache doesn't persist between runs like it would on
-          # self-hosted. This pulls/pushes the layer cache to GHCR instead,
-          # so unchanged stages (e.g. Boost/Kaldi/Marian if only a later
-          # script changed) still skip recompilation.
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
