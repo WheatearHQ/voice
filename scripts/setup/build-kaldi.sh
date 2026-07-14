@@ -28,6 +28,8 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+export MAKEFLAGS=-s
+
 mkdir kaldi
 cd kaldi
 git init -q
@@ -39,13 +41,20 @@ cd tools
 if [[ `uname` == 'Darwin' ]] ; then
   perl -i -pe"s/-g -O2/-g -O2 -mmacosx-version-min=$osx_version/g" Makefile
 fi
+if [[ `uname` != 'Darwin' && `uname -m` != 'x86_64' ]] ; then
+  perl -i -pe 's/xianyi-OpenBLAS-/OpenMathLib-OpenBLAS-/g' extras/install_openblas.sh
+  ./extras/install_openblas.sh
+fi
 make -j$jobs
 cd ../src
 if [[ `uname` == 'Darwin' ]] ; then
   ./configure --shared --use-cuda=no
   perl -i -pe"s/-O1/-O3 -DNDEBUG -mmacosx-version-min=$osx_version/g" kaldi.mk
-else
+elif [[ `uname -m` == 'x86_64' ]] ; then
   ./configure --shared --mathlib=MKL --mkl-root=/opt/intel/oneapi/mkl/latest --use-cuda=no
+  perl -i -pe's/-O1/-O3 -DNDEBUG/g' kaldi.mk
+else
+  ./configure --shared --mathlib=OPENBLAS --openblas-root=$PWD/../tools/OpenBLAS/install --use-cuda=no
   perl -i -pe's/-O1/-O3 -DNDEBUG/g' kaldi.mk
 fi
 perl -i -pe's/-g //g' kaldi.mk
