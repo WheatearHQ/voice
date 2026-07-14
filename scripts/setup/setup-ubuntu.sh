@@ -81,15 +81,16 @@ sudo-non-docker apt-get install --upgrade -y \
   yarn \
   zlib1g-dev
 
-curl https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1_linux-x64_bin.tar.gz -Lso jdk.tar.gz
+jdk_arch=$([[ `uname -m` == "x86_64" ]] && echo "x64" || echo "aarch64")
+curl -L "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.19%2B10/OpenJDK17U-jdk_${jdk_arch}_linux_hotspot_17.0.19_10.tar.gz" -so jdk.tar.gz
 tar xf jdk.tar.gz
 rm jdk.tar.gz
 
 echo ""
 echo "Install complete!"
 echo "Now, run build-dependencies.sh and add the following to your ~/.zshrc or ~/.bashrc:"
-echo "export PATH=\"$SERENADE_LIBRARY_ROOT/jdk-14.0.1/bin:$SERENADE_LIBRARY_ROOT/gradle-7.4.2/bin:\$PATH\""
-echo "export JAVA_HOME=\"$SERENADE_LIBRARY_ROOT/jdk-14.0.1\""
+echo "export PATH=\"$SERENADE_LIBRARY_ROOT/jdk-17.0.19+10/bin:$SERENADE_LIBRARY_ROOT/gradle-7.4.2/bin:\$PATH\""
+echo "export JAVA_HOME=\"$SERENADE_LIBRARY_ROOT/jdk-17.0.19+10\""
 
 # If we're not installing on docker, we need to restart.
 if [[ "$gpu" == "true" && "$EUID" != 0 ]] ; then

@@ -34,10 +34,10 @@ RUN ./scripts/setup/build-kaldi.sh --jobs=${BUILD_JOBS} $([ "${DEVICE_TYPE}" = "
 COPY scripts/setup/build-cleanup.sh scripts/setup/
 RUN ./scripts/setup/build-cleanup.sh $([ "${BUILD_TYPE}" = "minimal" ] && echo "--minimal")
 
-ENV JAVA_HOME="/root/libserenade/jdk-14.0.1"
+ENV JAVA_HOME="/root/libserenade/jdk-17.0.19+10"
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
-ENV PATH="/root/libserenade/gradle-7.4.2/bin:/root/libserenade/jdk-14.0.1/bin:/root/serenade/scripts/serenade/bin:${PATH}"
+ENV PATH="/root/libserenade/gradle-7.4.2/bin:/root/libserenade/jdk-17.0.19+10/bin:/root/serenade/scripts/serenade/bin:${PATH}"
 ENV PYTHONPATH="/root/serenade/scripts"
 ENV SERENADE_SOURCE_ROOT="/root/serenade"
 ENV SERENADE_LIBRARY_ROOT="/root/libserenade"
