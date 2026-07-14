@@ -19,7 +19,17 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest-m
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest-m
+            suffix: amd64
+          - platform: linux/arm64
+            runner: ubuntu-latest-arm64
+            suffix: arm64
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
       packages: write
@@ -45,11 +55,11 @@ jobs:
         with:
           context: .
           file: config/Dockerfile
-          platforms: linux/amd64
+          platforms: ${{ matrix.platform }}
           build-args: |
             BUILD_TYPE=minimal
             BUILD_JOBS=4
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-${{ matrix.suffix }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache-${{ matrix.suffix }}
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache-${{ matrix.suffix }},mode=max
