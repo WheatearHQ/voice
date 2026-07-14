@@ -35,7 +35,7 @@ if [[ "$gpu" == "true" ]] ; then
   sudo-non-docker ubuntu-drivers autoinstall
 fi
 
-mathlib_package=""
+mathlib_package="libopenblas-dev liblapacke-dev"
 if [[ `uname -m` == "x86_64" ]] ; then
   mathlib_package="intel-oneapi-mkl-devel"
   curl -sL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | sudo-non-docker apt-key add -
