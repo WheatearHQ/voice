@@ -1,0 +1,97 @@
+diff --git a/src/tensors/cpu/tensor_operators.cpp b/src/tensors/cpu/tensor_operators.cpp
+index 211283d..5e69d04 100755
+--- a/src/tensors/cpu/tensor_operators.cpp
++++ b/src/tensors/cpu/tensor_operators.cpp
+@@ -289,6 +289,7 @@ void TransposeFirst3In4(Tensor out, Tensor in, const std::vector<int>& vAxis) {
+ }
+ #endif  // MKL_FOUND
+ 
++#ifdef __SSE__
+ inline void transpose4x4_SSE(const float* A,
+                              float* B,
+                              const int lda,
+@@ -331,6 +332,7 @@ void Transpose10(Tensor out, const Tensor in) {
+     }
+   }
+ }
++#endif // of "#ifdef __SSE__"
+ 
+ // @TODO: optimize this, currently it's quite horrible
+ template <bool add>
+@@ -374,9 +376,11 @@ void TransposeND(Tensor out, Tensor in, const std::vector<int>& vAxis) {
+   else if(vAxis.size() == 4 && vAxis[3] == 3)
+     TransposeFirst3In4<false>(out, in, vAxis);
+ #endif  // MKL_FOUND
++#ifdef __SSE__
+   else if(vAxis == std::vector<int>({1, 0}) && in->shape()[-1] % 16 == 0
+           && in->shape()[-2] % 16 == 0)
+     Transpose10(out, in);
++#endif // of "#ifdef __SSE__"
+   else
+     TransposeGeneric<false>(out, in, vAxis);
+ }
+@@ -439,9 +443,12 @@ void Softmax(Tensor out, Tensor in) {
+     return;
+   }
+ #endif
++#ifdef __SSE__
+   if(out->shape()[-1] % 4 == 0) {
+     Softmax<float32x4>(out, in);
+-  } else {
++  } else
++#endif
++  {
+     Softmax<float>(out, in);
+   }
+ }
+@@ -495,9 +502,12 @@ void LogSoftmax(Tensor out, Tensor in) {
+     return;
+   }
+ #endif
++#ifdef __SSE__
+   if(out->shape()[-1] % 4 == 0) {
+     LogSoftmax<float32x4>(out, in);
+-  } else {
++  } else
++#endif
++  {
+     LogSoftmax<float>(out, in);
+   }
+ }
+@@ -1337,14 +1347,17 @@ void LSTMCellForwardTyped(Tensor out_, const std::vector<Tensor>& inputs) {
+ 
+ void LSTMCellForward(Tensor out, std::vector<Tensor> inputs) {
+   int cols = out->shape()[-1];
++  (void) cols;
+ #ifdef __AVX__
+   if(cols % 8 == 0)
+     LSTMCellForwardTyped<float32x8>(out, inputs);
+   else
+ #endif
++#ifdef __SSE__
+   if(cols % 4 == 0)
+     LSTMCellForwardTyped<float32x4>(out, inputs);
+   else
++#endif
+     LSTMCellForwardTyped<float>(out, inputs);
+ }
+ 
+@@ -1380,15 +1393,18 @@ void LSTMOutputForwardTyped(Tensor out_, const std::vector<Tensor>& inputs) {
+ 
+ void LSTMOutputForward(Tensor out, std::vector<Tensor> inputs) {
+   int cols = out->shape()[-1];
++  (void) cols;
+ 
+ #ifdef __AVX__
+   if(cols % 8 == 0)
+     LSTMOutputForwardTyped<float32x8>(out, inputs);
+   else 
+ #endif
++#ifdef __SSE__
+   if(cols % 4 == 0)
+     LSTMOutputForwardTyped<float32x4>(out, inputs);
+   else
++#endif
+     LSTMOutputForwardTyped<float>(out, inputs);
+ }
+ 

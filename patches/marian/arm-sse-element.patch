@@ -1,0 +1,15 @@
+diff --git a/src/tensors/cpu/element.h b/src/tensors/cpu/element.h
+index d98a0f9..090a34b 100644
+--- a/src/tensors/cpu/element.h
++++ b/src/tensors/cpu/element.h
+@@ -107,8 +107,10 @@ void elementFloat(const Functor& functor, marian::Tensor out, Tensors... tensors
+ 
+   if(div4) {
+     // std::cerr << "4: " << functor.to_string() << std::endl;
++#ifdef __SSE__
+     element<float32x4>(functor, out, tensors...);
+     return;
++#endif
+   }
+ #endif
+   // std::cerr << "1: " << functor.to_string() << std::endl;

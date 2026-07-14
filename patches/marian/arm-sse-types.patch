@@ -1,0 +1,29 @@
+diff --git a/src/common/types.h b/src/common/types.h
+index 4bc4f9a..b4ec434 100644
+--- a/src/common/types.h
++++ b/src/common/types.h
+@@ -16,7 +16,7 @@
+ #include <functional>
+ #include <type_traits>
+ 
+-#ifndef __CUDACC__ // NVCC is very unreliable when it comes to CPU intrinsics, we hide them completely from NVCC-compiled code
++#if !defined(__CUDACC__) && (defined(__x86_64__) || defined(__i386__)) // NVCC is very unreliable when it comes to CPU intrinsics, we hide them completely from NVCC-compiled code; immintrin.h is x86-only
+ #include <immintrin.h>
+ #endif
+ 
+@@ -152,6 +152,7 @@ struct packed8avx512 {
+ 
+ #ifndef __CUDACC__ // vectorized types not available from .cu files
+ 
++#ifdef __SSE__
+ // @TODO: check what intrinsics are actually available.
+ struct float32x4 {
+ private:
+@@ -178,6 +179,7 @@ public:
+     return out;
+   }
+ };
++#endif // of "#ifdef __SSE__"
+ 
+ // @TODO: consider how code can be shared via templating
+ #ifdef __AVX__
