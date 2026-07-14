@@ -23,6 +23,6 @@ done
 git clone --recursive --shallow-submodules --depth 1 --branch boost-1.78.0 https://github.com/boostorg/boost.git boost-src
 cd boost-src
 ./bootstrap.sh --prefix=$PWD/../boost
-./b2 install -j$jobs
+./b2 install -j$jobs -d0
 cd ..
 rm -rf boost-src

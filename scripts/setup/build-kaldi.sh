@@ -61,6 +61,7 @@ else
   perl -i -pe's/-O1/-O3 -DNDEBUG/g' kaldi.mk
 fi
 perl -i -pe's/-g //g' kaldi.mk
+echo 'CXXFLAGS += -w' >> kaldi.mk
 make -j clean depend
 make -j$jobs
 cd ../tools

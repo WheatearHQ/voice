@@ -6,6 +6,8 @@ HERE=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 . $HERE/paths.sh
 cd $SERENADE_LIBRARY_ROOT
 
+export MAKEFLAGS=-s
+
 osx_version="11.0"
 jobs=2
 while [[ $# -gt 0 ]]; do
