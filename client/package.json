@@ -107,8 +107,8 @@
     "react-string-replace": "^0.4.4",
     "redux": "^4.0.5",
     "semver": "^7.3.7",
-    "serenade-driver": "1.1.13",
-    "speech-recorder": "2.1.0",
+    "serenade-driver": "github:WheatearHQ/driver#master",
+    "speech-recorder": "github:WheatearHQ/speech-recorder#master",
     "uuid": "^8.3.1",
     "ws": "^8.2.2"
   },
