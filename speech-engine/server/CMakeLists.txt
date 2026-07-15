@@ -137,10 +137,17 @@ target_link_libraries(serenade-speech-engine
 
 if(APPLE)
   target_link_libraries(serenade-speech-engine "-framework Accelerate")
-else()
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
   target_link_libraries(serenade-speech-engine
     "-Wl,--start-group;/opt/intel/mkl/lib/intel64/libmkl_intel_ilp64.a;/opt/intel/mkl/lib/intel64/libmkl_sequential.a;/opt/intel/mkl/lib/intel64/libmkl_core.a;-Wl,--end-group"
     dl
     gomp
+  )
+else()
+  target_link_libraries(serenade-speech-engine
+    ${SERENADE_LIBRARY_ROOT}/kaldi/tools/OpenBLAS/install/lib/libopenblas.a
+    dl
+    gomp
+    gfortran
   )
 endif()
