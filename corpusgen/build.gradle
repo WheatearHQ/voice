@@ -2,7 +2,6 @@ import ai.serenade.AntlrGenerateTask
 
 apply plugin: "application"
 
-sourceCompatibility = 14
 mainClassName = "corpusgen.CorpusGen"
 distZip.enabled = false
 distTar.enabled = false
