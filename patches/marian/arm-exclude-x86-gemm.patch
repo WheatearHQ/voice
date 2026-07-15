@@ -1,0 +1,32 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 6dcf7fd..27b173d 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -54,9 +54,6 @@ set(MARIAN_SOURCES
+   tensors/cpu/tensor_operators.cpp
+ 
+   tensors/cpu/sharp/int_gemm.cpp
+-  tensors/cpu/sharp/avx_gemm.cpp
+-  tensors/cpu/sharp/sse_gemm.cpp
+-  tensors/cpu/fbgemm/packed_gemm.cpp
+ 
+   graph/expression_graph.cpp
+   graph/expression_operators.cpp
+@@ -113,6 +110,17 @@ set(MARIAN_SOURCES
+   $<TARGET_OBJECTS:faiss>
+ )
+ 
++# avx_gemm.cpp/sse_gemm.cpp/packed_gemm.cpp are raw x86 SIMD sources with no
++# portable fallback; packed_gemm.cpp is dead weight anyway since USE_FBGEMM
++# defaults off.
++if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|i386|i686|AMD64)$")
++  list(APPEND MARIAN_SOURCES
++    tensors/cpu/sharp/avx_gemm.cpp
++    tensors/cpu/sharp/sse_gemm.cpp
++    tensors/cpu/fbgemm/packed_gemm.cpp
++  )
++endif()
++
+ add_library(marian STATIC ${MARIAN_SOURCES})
+ 
+ target_compile_options(marian PRIVATE ${ALL_WARNINGS})

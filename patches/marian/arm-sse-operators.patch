@@ -1,0 +1,23 @@
+diff --git a/src/functional/operators.h b/src/functional/operators.h
+index 6345bfb..ebc8882 100755
+--- a/src/functional/operators.h
++++ b/src/functional/operators.h
+@@ -213,6 +213,8 @@ struct Ops<double> {
+ // __CUDA_ARCH__ is defined when compiling device (GPU) code
+ #ifndef __CUDACC__
+ 
++#ifdef __SSE__
++
+ #include "3rd_party/sse_mathfun.h"
+ 
+ namespace marian {
+@@ -342,6 +344,9 @@ struct Ops<float32x4> {
+ 
+ } // end namespace functional
+ } // end namespace marian
++
++#endif // of "#ifdef __SSE__"
++
+ #ifdef __AVX__
+ #include "3rd_party/avx_mathfun.h"
+ 

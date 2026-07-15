@@ -1,0 +1,76 @@
+diff --git a/src/tensors/cpu/sharp/int_gemm.cpp b/src/tensors/cpu/sharp/int_gemm.cpp
+index cdb7cbf..0a8d73a 100644
+--- a/src/tensors/cpu/sharp/int_gemm.cpp
++++ b/src/tensors/cpu/sharp/int_gemm.cpp
+@@ -2,10 +2,12 @@
+ #include "tensors/tensor_allocator.h"
+ #include "tensors/tensor_operators.h"
+ 
++#if defined(__x86_64__) || defined(__i386__)
+ #include <emmintrin.h>
+ #include <immintrin.h>
+ #include <tmmintrin.h>
+ #include <xmmintrin.h>
++#endif
+ #include <cassert>
+ #include <cstddef>
+ 
+@@ -41,6 +43,7 @@ void AVX_MatrixMult8(const __m512i* A,
+                      int width);
+ #endif
+ 
++#ifdef __SSE__
+ void SSE_Quantize16(const float* input,
+                     __m128i* output,
+                     float quant_mult,
+@@ -54,6 +57,7 @@ void SSE_MatrixMult16(const __m128i* A,
+                       int num_A_rows,
+                       int num_B_rows,
+                       int width);
++#endif
+ 
+ void Quantize16(marian::Tensor out,
+                 const marian::Tensor in,
+@@ -62,10 +66,13 @@ void Quantize16(marian::Tensor out,
+ #ifdef __AVX512F__
+   AVX_Quantize16(
+       in->data(), out->data<int16_t>(), quant_mult, in->shape().elements());
+-#else
++#elif defined(__SSE__)
+   int num_rows = in->shape().elements() / in->shape()[-1];
+   int width = in->shape()[-1];
+   SSE_Quantize16(in->data(), out->data<__m128i>(), quant_mult, num_rows, width);
++#else
++  out; in; quant_mult;
++  ABORT("16-bit quantization requires AVX512 or SSE");
+ #endif
+ }
+ 
+@@ -102,7 +109,7 @@ void AddBias(marian::Tensor C, const marian::Tensor Bias) {
+       __m512 yi = _mm512_add_ps(ai, bi);
+       _mm512_storeu_ps(y + j * n + i, yi);
+     }
+-#else
++#elif defined(__SSE__)
+     int n4 = (n / 4) * 4;
+     for(; i < n4; i += 4) {
+       __m128 ai = _mm_loadu_ps(x + j * n + i);
+@@ -143,7 +150,7 @@ void ProdInt16(marian::Tensor C,
+                    num_A_rows,
+                    num_B_rows,
+                    width);
+-#else
++#elif defined(__SSE__)
+   SSE_MatrixMult16(A->data<__m128i>(),
+                    B->data<__m128i>(),
+                    fC,
+@@ -151,6 +158,9 @@ void ProdInt16(marian::Tensor C,
+                    num_A_rows,
+                    num_B_rows,
+                    width);
++#else
++  fC; num_A_rows; num_B_rows; width; unquant_mult;
++  ABORT("16-bit quantization requires AVX512 or SSE");
+ #endif
+ }
+ 

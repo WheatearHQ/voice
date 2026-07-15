@@ -1,0 +1,20 @@
+diff --git a/src/functional/tensor.h b/src/functional/tensor.h
+index c928ff0..1725fb8 100755
+--- a/src/functional/tensor.h
++++ b/src/functional/tensor.h
+@@ -21,6 +21,7 @@ inline marian::Shape adapt(const marian::Shape& shape) {
+ 
+ #ifndef __CUDACC__ // vectorized types not available from .cu files
+ 
++#ifdef __SSE__
+ template <>
+ inline marian::Shape adapt<float32x4>(const marian::Shape& shape) {
+   ABORT_IF(shape[-1] % 4 != 0,
+@@ -31,6 +32,7 @@ inline marian::Shape adapt<float32x4>(const marian::Shape& shape) {
+   x4Shape.set(-1, shape[-1] / 4);
+   return x4Shape;
+ }
++#endif // of "#ifdef __SSE__"
+ #ifdef __AVX__
+ template <>
+ inline marian::Shape adapt<float32x8>(const marian::Shape& shape) {
