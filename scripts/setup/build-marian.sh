@@ -36,6 +36,7 @@ git fetch --depth 1 origin 737f43014a939a3ded2806b00cbaa661fbcc5f49
 git checkout -q FETCH_HEAD
 git apply $SERENADE_SOURCE_ROOT/patches/marian/fix-warnings.patch
 git apply $SERENADE_SOURCE_ROOT/patches/marian/max-history.patch
+git apply $SERENADE_SOURCE_ROOT/patches/marian/tolerate-missing-git.patch
 if [[ `uname` != 'Darwin' && `uname -m` != 'x86_64' ]] ; then
   # -m64 is an x86-only flag; this Marian commit predates its own ARM support.
   perl -i -pe 's/-m64 //g' CMakeLists.txt
