@@ -108,11 +108,20 @@ if(APPLE)
     ${Iconv_LIBRARIES}
     "-framework Accelerate"
   )
-else()
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
   target_link_libraries(serenade-code-engine
     "-Wl,--start-group;/opt/intel/mkl/lib/intel64/libmkl_intel_ilp64.a;/opt/intel/mkl/lib/intel64/libmkl_sequential.a;/opt/intel/mkl/lib/intel64/libmkl_core.a;-Wl,--end-group"
     dl
     gomp
+  )
+  add_executable(config-generator config-generator/config_generator.cc)
+  target_link_libraries(config-generator ${MARIAN_ROOT}/build/libmarian.a)
+else()
+  target_link_libraries(serenade-code-engine
+    ${SERENADE_LIBRARY_ROOT}/kaldi/tools/OpenBLAS/install/lib/libopenblas.a
+    dl
+    gomp
+    gfortran
   )
   add_executable(config-generator config-generator/config_generator.cc)
   target_link_libraries(config-generator ${MARIAN_ROOT}/build/libmarian.a)
