@@ -41,3 +41,20 @@ ENV PATH="/root/libserenade/gradle-7.4.2/bin:/root/libserenade/jdk-17.0.19+10/bi
 ENV PYTHONPATH="/root/serenade/scripts"
 ENV SERENADE_SOURCE_ROOT="/root/serenade"
 ENV SERENADE_LIBRARY_ROOT="/root/libserenade"
+
+COPY build.gradle settings.gradle ./
+COPY buildSrc buildSrc
+COPY bin bin
+COPY config config
+COPY scripts scripts
+COPY toolbelt toolbelt
+COPY grammarflattener grammarflattener
+
+COPY corpusgen corpusgen
+COPY offline offline
+COPY replayer replayer
+COPY core core
+COPY code-engine code-engine
+COPY speech-engine speech-engine
+
+RUN gradle core:installDist code-engine:installDist speech-engine:installDist --console=plain
