@@ -15,7 +15,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-latest-arm64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,10 +23,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
-
-      - name: Install a working node-gyp
-        run: npm install -g node-gyp@12.4.0
+          node-version: 20
 
       - name: Checkout speech-recorder fork
         uses: actions/checkout@v4
@@ -37,13 +34,25 @@ jobs:
       - name: Build speech-recorder native module
         working-directory: speech-recorder-src
         run: |
-          ./setup.sh x64
-          npm install --ignore-scripts
-          node-gyp rebuild
+          yarn install --frozen-lockfile --ignore-scripts
+          npm install --no-save node-gyp@12.4.0
+          bash setup.sh arm64
+          rm -rf lib/build lib/install
+          mkdir -p lib/build
+          cd lib/build
+          cmake -DCMAKE_OSX_ARCHITECTURES=arm64 ..
+          cmake --build . --config Release
+          cmake --install . --prefix ../install
+          cd ../..
+          npm_config_arch=arm64 ./node_modules/.bin/node-gyp rebuild
 
-      - name: Install client dependencies
+      - name: Install client dependencies (driver + speech-recorder skip their own build)
         working-directory: client
-        run: npm install
+        run: npm install --ignore-scripts
+
+      - name: Rebuild serenade-driver
+        working-directory: client
+        run: cd node_modules/serenade-driver && npx node-gyp rebuild
 
       - name: Replace speech-recorder with the fork's built copy
         working-directory: client
@@ -51,7 +60,15 @@ jobs:
           rm -rf node_modules/speech-recorder
           cp -R ../speech-recorder-src node_modules/speech-recorder
           rm -rf node_modules/speech-recorder/node_modules
-          npm install --prefix node_modules/speech-recorder node-addon-api@^4.2.0
+          npm install --ignore-scripts --prefix node_modules/speech-recorder node-addon-api@^4.2.0
+
+      - name: Build custom-commands-server
+        working-directory: client/static/custom-commands-server
+        run: npm install
+
+      - name: Minify custom-commands-server
+        working-directory: client
+        run: npx uglifyjs static/custom-commands-server/serenade-custom-commands-server.js -c -m -o static/custom-commands-server/serenade-custom-commands-server.min.js
 
       - name: Generate protobuf bindings
         working-directory: client
@@ -63,16 +80,3 @@ jobs:
       - name: Build
         working-directory: client
         run: npm run build
-
-      - name: Package (unsigned)
-        working-directory: client
-        run: npm run package:unsigned
-
-      - name: Upload packaged app
-        uses: actions/upload-artifact@v4
-        with:
-          name: serenade-client-macos
-          path: |
-            client/dist/*.dmg
-            client/dist/*.zip
-          if-no-files-found: error
