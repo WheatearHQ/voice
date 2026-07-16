@@ -1,0 +1,82 @@
+name: Build client
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "client/**"
+      - "toolbelt/src/main/proto/**"
+      - ".github/workflows/client-build.yml"
+  pull_request:
+    paths:
+      - "client/**"
+      - "toolbelt/src/main/proto/**"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest-arm64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Checkout speech-recorder fork
+        uses: actions/checkout@v4
+        with:
+          repository: WheatearHQ/speech-recorder
+          path: speech-recorder-src
+
+      - name: Build speech-recorder native module
+        working-directory: speech-recorder-src
+        run: |
+          yarn install --frozen-lockfile --ignore-scripts
+          npm install --no-save node-gyp@12.4.0
+          bash setup.sh arm64
+          rm -rf lib/build lib/install
+          mkdir -p lib/build
+          cd lib/build
+          cmake -DCMAKE_OSX_ARCHITECTURES=arm64 ..
+          cmake --build . --config Release
+          cmake --install . --prefix ../install
+          cd ../..
+          npm_config_arch=arm64 ./node_modules/.bin/node-gyp rebuild
+
+      - name: Install client dependencies (driver + speech-recorder skip their own build)
+        working-directory: client
+        run: npm install --ignore-scripts
+
+      - name: Rebuild serenade-driver
+        working-directory: client
+        run: cd node_modules/serenade-driver && npx node-gyp rebuild
+
+      - name: Replace speech-recorder with the fork's built copy
+        working-directory: client
+        run: |
+          rm -rf node_modules/speech-recorder
+          cp -R ../speech-recorder-src node_modules/speech-recorder
+          rm -rf node_modules/speech-recorder/node_modules
+          npm install --ignore-scripts --prefix node_modules/speech-recorder node-addon-api@^4.2.0
+
+      - name: Build custom-commands-server
+        working-directory: client/static/custom-commands-server
+        run: npm install
+
+      - name: Minify custom-commands-server
+        working-directory: client
+        run: npx uglifyjs static/custom-commands-server/serenade-custom-commands-server.js -c -m -o static/custom-commands-server/serenade-custom-commands-server.min.js
+
+      - name: Generate protobuf bindings
+        working-directory: client
+        run: |
+          mkdir -p src/gen
+          npx pbjs -t static-module -o src/gen/core.js -w commonjs ../toolbelt/src/main/proto/core.proto
+          npx pbts -o src/gen/core.d.ts src/gen/core.js
+
+      - name: Build
+        working-directory: client
+        run: npm run build
