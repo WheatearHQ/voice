@@ -1,0 +1,77 @@
+name: Build client
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "client/**"
+      - "toolbelt/src/main/proto/**"
+  pull_request:
+    paths:
+      - "client/**"
+      - "toolbelt/src/main/proto/**"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-13
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install a working node-gyp
+        run: npm install -g node-gyp@12.4.0
+
+      - name: Checkout speech-recorder fork
+        uses: actions/checkout@v4
+        with:
+          repository: WheatearHQ/speech-recorder
+          path: speech-recorder-src
+
+      - name: Build speech-recorder native module
+        working-directory: speech-recorder-src
+        run: |
+          ./setup.sh x64
+          npm install --ignore-scripts
+          node-gyp rebuild
+
+      - name: Install client dependencies
+        working-directory: client
+        run: npm install
+
+      - name: Replace speech-recorder with the fork's built copy
+        working-directory: client
+        run: |
+          rm -rf node_modules/speech-recorder
+          cp -R ../speech-recorder-src node_modules/speech-recorder
+          rm -rf node_modules/speech-recorder/node_modules
+          npm install --prefix node_modules/speech-recorder node-addon-api@^4.2.0
+
+      - name: Generate protobuf bindings
+        working-directory: client
+        run: |
+          mkdir -p src/gen
+          npx pbjs -t static-module -o src/gen/core.js -w commonjs ../toolbelt/src/main/proto/core.proto
+          npx pbts -o src/gen/core.d.ts src/gen/core.js
+
+      - name: Build
+        working-directory: client
+        run: npm run build
+
+      - name: Package (unsigned)
+        working-directory: client
+        run: npm run package:unsigned
+
+      - name: Upload packaged app
+        uses: actions/upload-artifact@v4
+        with:
+          name: serenade-client-macos
+          path: |
+            client/dist/*.dmg
+            client/dist/*.zip
+          if-no-files-found: error
