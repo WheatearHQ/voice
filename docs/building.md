@@ -109,6 +109,12 @@ To run a specific set of services, you can run:
 
     scripts/serenade/bin/run.py --service speech-engine --service code-engine
 
+If you're running services directly on a single machine (not through Docker Compose's network aliases), pass `--env local` so services address each other via `localhost` instead of the bare service-name hostnames (`core`, `code-engine`, `speech-engine`) that only resolve inside Compose's network:
+
+    scripts/serenade/bin/run.py --env local --service speech-engine --service code-engine --service core
+
+Without `--env local`, `core` will fail to reach `code-engine`/`speech-engine` with a `ConnectException`, since those hostnames won't resolve.
+
 ## Running Tests
 
 To run all of the Serenade tests:
