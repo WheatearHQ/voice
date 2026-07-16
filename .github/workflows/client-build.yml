@@ -2,7 +2,7 @@ name: Build client
 
 on:
   push:
-    branches: [main, master, ci/client-build]
+    branches: [main, master]
     paths:
       - "client/**"
       - "toolbelt/src/main/proto/**"
