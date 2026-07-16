@@ -2,10 +2,11 @@ name: Build client
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, ci/client-build]
     paths:
       - "client/**"
       - "toolbelt/src/main/proto/**"
+      - ".github/workflows/client-build.yml"
   pull_request:
     paths:
       - "client/**"
